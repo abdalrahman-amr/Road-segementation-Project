@@ -19,3 +19,43 @@ def sobel_xy(img, orient='x', thresh=(20, 100)):
 
     # Return the result
     return binary_output
+
+def mag_thresh(img, sobel_kernel=3, mag_thresh=(0, 255)):
+    """
+    Define a function to return the magnitude of the gradient
+    for a given sobel kernel size and threshold values
+    """
+
+    # adaptive histogram equalization
+    # img = exposure.equalize_adapthist(img, clip_limit=0.01)
+
+    # Take both Sobel x and y gradients
+    sobelx = cv2.Sobel(img, cv2.CV_64F, 1, 0, ksize=sobel_kernel)
+    sobely = cv2.Sobel(img, cv2.CV_64F, 0, 1, ksize=sobel_kernel)
+    # Calculate the gradient magnitude
+    gradmag = np.sqrt(sobelx**2 + sobely**2)
+    # Rescale to 8 bit
+    scale_factor = np.max(gradmag)/255
+    gradmag = (gradmag/scale_factor).astype(np.uint8)
+    # Create a binary image of ones where threshold is met, zeros otherwise
+    binary_output = np.zeros_like(gradmag)
+    binary_output[(gradmag >= mag_thresh[0]) & (gradmag <= mag_thresh[1])] = 255
+
+    # Return the binary image
+    return binary_output
+    
+    
+    def dir_thresh(img, sobel_kernel=3, thresh=(0.7, 1.3)):
+    """
+    computes the direction of the gradient
+    """
+    # Calculate the x and y gradients
+    sobelx = cv2.Sobel(img, cv2.CV_64F, 1, 0, ksize=sobel_kernel)
+    sobely = cv2.Sobel(img, cv2.CV_64F, 0, 1, ksize=sobel_kernel)
+    # Take the absolute value of the gradient direction,
+    # apply a threshold, and create a binary image result
+    absgraddir = np.arctan2(np.absolute(sobely), np.absolute(sobelx))
+    binary_output = np.zeros_like(absgraddir)
+    binary_output[(absgraddir >= thresh[0]) & (absgraddir <= thresh[1])] = 255
+    # Return the binary image
+    return binary_output.astype(np.uint8)
