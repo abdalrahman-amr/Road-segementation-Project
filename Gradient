@@ -1,1 +1,21 @@
+def sobel_xy(img, orient='x', thresh=(20, 100)):
+    """
+    Define a function that applies Sobel x or y.
+    The gradient in the x-direction emphasizes edges closer to vertical.
+    The gradient in the y-direction emphasizes edges closer to horizontal.
+    """
+    # img = exposure.equalize_hist(img)
+    # adaptive histogram equalization
+    # img = exposure.equalize_adapthist(img, clip_limit=0.01)
 
+    if orient == 'x':
+        abs_sobel = np.absolute(cv2.Sobel(img, cv2.CV_64F, 1, 0))
+    if orient == 'y':
+        abs_sobel = np.absolute(cv2.Sobel(img, cv2.CV_64F, 0, 1))
+    # Rescale back to 8 bit integer
+    scaled_sobel = np.uint8(255*abs_sobel/np.max(abs_sobel))
+    binary_output = np.zeros_like(scaled_sobel)
+    binary_output[(scaled_sobel >= thresh[0]) & (scaled_sobel <= thresh[1])] = 255
+
+    # Return the result
+    return binary_output
