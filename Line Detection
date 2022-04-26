@@ -176,3 +176,114 @@ def averaging(lines, pre_lines=3):
     rad_of_curvature(left_line, right_line)
     return output
 
+
+
+def prev_window_refer(b_img, left_line, right_line):
+    """
+    refer to previous window info - after detecting lane lines in previous frame
+    """
+    # Create an output image to draw on and  visualize the result
+    output = np.dstack((b_img, b_img, b_img)) * 255
+
+    # Identify the x and y positions of all nonzero pixels in the image
+    nonzero = b_img.nonzero()
+    nonzeroy = np.array(nonzero[0])
+    nonzerox = np.array(nonzero[1])
+    
+
+    # Set margin of windows
+    window_margin = left_line.window_margin
+    
+    
+    leftx_min = left_line.allx[-1] - window_margin
+    leftx_max = left_line.allx[-1] + window_margin
+    rightx_min = right_line.allx[-1] - window_margin
+    rightx_max = right_line.allx[-1] + window_margin
+    """
+    lefty_min = left_line.ally[-1] - window_margin
+    lefty_max = left_line.ally[-1] + window_margin
+    righty_min = right_line.ally[-5] - window_margin
+    righty_max = right_line.ally[-5] + window_margin
+    
+    &(nonzeroy >= lefty_min) & (nonzeroy <= lefty_max)
+    & (nonzeroy >= righty_min) & (nonzeroy <= righty_max)
+    """    
+    # Identify the nonzero pixels in x and y within the window
+    left_inds = ((nonzerox >= leftx_min) & (nonzerox <= leftx_max)).nonzero()[0]
+    right_inds = ((nonzerox >= rightx_min) & (nonzerox <= rightx_max) ).nonzero()[0]
+
+    #left_inds_y = ((nonzeroy >= lefty_min) & (nonzeroy <= lefty_max)).nonzero()[1]
+    #right_inds_y = ((nonzeroy >= righty_min) & (nonzeroy <= righty_max)).nonzero()[1]
+    
+    #print(left_inds_x)
+    
+    # Extract left and right line pixel positions
+    leftx, lefty = nonzerox[left_inds], nonzeroy[left_inds]
+    rightx, righty = nonzerox[right_inds], nonzeroy[right_inds]
+    """
+    print(leftx)
+    print(leftx)
+    print(rightx)
+    print(righty)
+    """
+    output[lefty, leftx] = [255, 0, 0]
+    output[righty, rightx] = [0, 0, 255]
+
+    # Fit a second order polynomial to each
+    left_fit = np.polyfit(lefty, leftx, 2)
+    right_fit = np.polyfit(righty, rightx, 2)
+
+    # Generate x and y values for plotting
+    ploty = np.linspace(0, b_img.shape[0] - 1, b_img.shape[0])
+
+    # ax^2 + bx + c
+    left_plotx = left_fit[0] * ploty ** 2 + left_fit[1] * ploty + left_fit[2]
+    right_plotx = right_fit[0] * ploty ** 2 + right_fit[1] * ploty + right_fit[2]
+
+    leftx_avg = np.average(left_plotx)
+    rightx_avg = np.average(right_plotx)
+
+    left_line.prevx.append(left_plotx)
+    right_line.prevx.append(right_plotx)
+
+    if len(left_line.prevx) > 10:
+        left_avg_line = smoothing(left_line.prevx, 10)
+        left_avg_fit = np.polyfit(ploty, left_avg_line, 2)
+        left_fit_plotx = left_avg_fit[0] * ploty ** 2 + left_avg_fit[1] * ploty + left_avg_fit[2]
+        left_line.current_fit = left_avg_fit
+        left_line.allx, left_line.ally = left_fit_plotx, ploty
+    else:
+        left_line.current_fit = left_fit
+        left_line.allx, left_line.ally = left_plotx, ploty
+
+    if len(right_line.prevx) > 10:
+        right_avg_line = smoothing(right_line.prevx, 10)
+        right_avg_fit = np.polyfit(ploty, right_avg_line, 2)
+        right_fit_plotx = right_avg_fit[0] * ploty ** 2 + right_avg_fit[1] * ploty + right_avg_fit[2]
+        right_line.current_fit = right_avg_fit
+        right_line.allx, right_line.ally = right_fit_plotx, ploty
+    else:
+        right_line.current_fit = right_fit
+        right_line.allx, right_line.ally = right_plotx, ploty
+
+    # goto blind_search if the standard value of lane lines is high.
+    standard = np.std(right_line.allx - left_line.allx)
+
+    if (standard > 80  ) :
+        left_line.detected = False
+    elif(standard < 40):
+        left_line.detected = False
+        
+        
+        
+
+    left_line.startx, right_line.startx = left_line.allx[len(left_line.allx) - 1], right_line.allx[len(right_line.allx) - 1]
+    left_line.endx, right_line.endx = left_line.allx[0], right_line.allx[0]
+
+    # print radius of curvature
+    rad_of_curvature(left_line, right_line)
+    return output
+
+
+
+
