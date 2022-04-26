@@ -85,3 +85,35 @@ if __name__ == '__main__':
     cv2.destroyAllWindows()
 
 
+
+
+
+
+import os
+if not os.path.exists("data5"):
+    os.makedirs('data5')
+for i in range(len(final)):
+    name = './data5/frame'+ ""+str(i)+ '.jpg'
+    cv2.imwrite(name,final[i])
+    
+    
+    
+import cv2
+import numpy as np
+import glob
+
+img_array = []
+i = 0
+#for filename in glob.glob("data5/frame"+ ""+str(i)+".jpg"):
+for i in range(len(final)):
+    img = cv2.imread("data5/frame"+ ""+str(i)+".jpg")
+    height, width, layers = img.shape
+    size = (width,height)
+    img_array.append(img)
+
+
+out = cv2.VideoWriter('project2.avi',cv2.VideoWriter_fourcc(*'DIVX'), 25 , size)
+ 
+for i in range(len(img_array)):
+    out.write(img_array[i])
+out.release()    
