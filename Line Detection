@@ -51,7 +51,7 @@ def averaging(lines, pre_lines=3):
 
     return avg_line    
     
-    def blind_search(b_img, left_line, right_line):
+def blind_search(b_img, left_line, right_line):
     """
     blind search - first frame, lost lane lines
     using histogram & sliding window
@@ -149,7 +149,7 @@ def averaging(lines, pre_lines=3):
     right_line.prevx.append(right_plotx)
 
     if len(left_line.prevx) > 10:
-        left_avg_line = smoothing(left_line.prevx, 10)
+        left_avg_line = averaging(left_line.prevx, 10)
         left_avg_fit = np.polyfit(ploty, left_avg_line, 2)
         left_fit_plotx = left_avg_fit[0] * ploty ** 2 + left_avg_fit[1] * ploty + left_avg_fit[2]
         left_line.current_fit = left_avg_fit
@@ -159,7 +159,7 @@ def averaging(lines, pre_lines=3):
         left_line.allx, left_line.ally = left_plotx, ploty
 
     if len(right_line.prevx) > 10:
-        right_avg_line = smoothing(right_line.prevx, 10)
+        right_avg_line = averaging(right_line.prevx, 10)
         right_avg_fit = np.polyfit(ploty, right_avg_line, 2)
         right_fit_plotx = right_avg_fit[0] * ploty ** 2 + right_avg_fit[1] * ploty + right_avg_fit[2]
         right_line.current_fit = right_avg_fit
@@ -247,7 +247,7 @@ def prev_window_refer(b_img, left_line, right_line):
     right_line.prevx.append(right_plotx)
 
     if len(left_line.prevx) > 10:
-        left_avg_line = smoothing(left_line.prevx, 10)
+        left_avg_line = averaging(left_line.prevx, 10)
         left_avg_fit = np.polyfit(ploty, left_avg_line, 2)
         left_fit_plotx = left_avg_fit[0] * ploty ** 2 + left_avg_fit[1] * ploty + left_avg_fit[2]
         left_line.current_fit = left_avg_fit
@@ -257,7 +257,7 @@ def prev_window_refer(b_img, left_line, right_line):
         left_line.allx, left_line.ally = left_plotx, ploty
 
     if len(right_line.prevx) > 10:
-        right_avg_line = smoothing(right_line.prevx, 10)
+        right_avg_line = averaging(right_line.prevx, 10)
         right_avg_fit = np.polyfit(ploty, right_avg_line, 2)
         right_fit_plotx = right_avg_fit[0] * ploty ** 2 + right_avg_fit[1] * ploty + right_avg_fit[2]
         right_line.current_fit = right_avg_fit
